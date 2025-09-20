@@ -24,6 +24,7 @@ def convert_json_to_js():
     js_content = f"""// Religious Perspectives on Political Compass Data
 // Generated from religious_perspectives_on_political_compass.json
 // Total questions: {len(data)}
+// Each perspective includes: religion, choice, religious_text, reference, and reason
 
 const RELIGIOUS_DATA = {json.dumps(data, indent=2, ensure_ascii=False)};
 
@@ -59,9 +60,46 @@ function getChoiceLabel(choice) {{
     return labels[choice] || choice;
 }}
 
+// Helper function to get perspective details by religion and question
+function getPerspectiveDetails(questionId, religion) {{
+    const question = getQuestionById(questionId);
+    if (!question) return null;
+    
+    const perspective = question.religious_perspectives.find(p => p.religion === religion);
+    if (!perspective) return null;
+    
+    return {{
+        stance: getChoiceLabel(perspective.choice),
+        choice: perspective.choice,
+        religiousText: perspective.religious_text,
+        reference: perspective.reference,
+        reason: perspective.reason || 'No reasoning provided'
+    }};
+}}
+
+// Helper function to format perspective for display
+function formatPerspective(perspective) {{
+    return {{
+        religion: perspective.religion,
+        stance: getChoiceLabel(perspective.choice),
+        choice: perspective.choice,
+        religiousText: perspective.religious_text,
+        reference: perspective.reference,
+        reason: perspective.reason || 'No reasoning provided'
+    }};
+}}
+
 // Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {{
-    module.exports = {{ RELIGIOUS_DATA, getQuestionById, getAllQuestions, getAllReligions, getChoiceLabel }};
+    module.exports = {{ 
+        RELIGIOUS_DATA, 
+        getQuestionById, 
+        getAllQuestions, 
+        getAllReligions, 
+        getChoiceLabel,
+        getPerspectiveDetails,
+        formatPerspective
+    }};
 }}
 """
     

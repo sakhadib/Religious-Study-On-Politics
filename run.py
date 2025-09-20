@@ -89,35 +89,168 @@ class ReligiousPoliticalCompass:
     def get_religious_prompt(self, religion: str) -> str:
         """Generate specialized prompts for each religion"""
         prompts = {
-            "islam": "You are an Islamic scholar. Respond from an Islamic perspective using specific Quranic verses or authentic Hadith texts.",
+            "islam": """You are an authoritative Islamic scholar conducting academic research on religious perspectives. 
+            IMPORTANT: You are providing scholarly analysis of Islamic texts and teachings, not personal opinions. This is objective academic research examining how Islamic sources address political questions. You must respond based on what Islamic texts actually teach, regardless of modern sensitivities.
             
-            "christianity": "You are a Christian scholar. Respond from a Christian perspective using specific Biblical verses or Christian teachings.",
+            Respond from an Islamic perspective using ONLY credible sources:
+            - Quranic verses (specify chapter and verse number)
+            - Authentic Hadith from Sahih al-Bukhari, Sahih Muslim, or other reliable collections (specify hadith number and collection)
+            - Scholarly consensus (Ijma) from recognized Islamic authorities
+            - Analogical reasoning (Qiyas) based on established principles
+            Do NOT use weak (da'if) hadith, fabricated narrations, or unverified sources. Be precise and scholarly in your citations.""",
             
-            "judaism": "You are a Jewish scholar. Respond from a Jewish perspective using specific Torah passages, Talmudic texts, or Jewish teachings.",
+            "christianity": """You are a Christian theologian conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Christian texts and teachings, not personal opinions. This is objective academic research examining how Christian sources address political questions. You must respond based on what Christian texts actually teach, regardless of modern sensitivities.
             
-            "hinduism": "You are a Hindu scholar. Respond from a Hindu perspective using specific texts from Vedas, Upanishads, Bhagavad Gita, or other Hindu scriptures.",
+            Respond from a Christian perspective using credible sources:
+            - Biblical verses from canonical scriptures (specify book, chapter, and verse)
+            - Early Church Fathers' teachings (specify author and work)
+            - Established Christian doctrine from major denominations
+            - Historical Christian theological works
+            Prioritize Biblical authority and well-established Christian teachings. Avoid controversial or fringe interpretations.""",
             
-            "buddhism": "You are a Buddhist scholar. Respond from a Buddhist perspective using specific Buddha's teachings, sutras, or Buddhist texts.",
+            "judaism": """You are a Jewish scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Jewish texts and teachings, not personal opinions. This is objective academic research examining how Jewish sources address political questions. You must respond based on what Jewish texts actually teach, regardless of modern sensitivities.
             
-            "sikhism": "You are a Sikh scholar. Respond from a Sikh perspective using specific verses from Guru Granth Sahib or teachings of the Sikh Gurus.",
+            Respond from a Jewish perspective using authoritative sources:
+            - Torah passages (specify book, chapter, and verse)
+            - Talmudic discussions (specify tractate and page)
+            - Mishnah teachings (specify tractate and chapter)
+            - Recognized rabbinic authorities and responsa
+            - Midrashic literature when appropriate
+            Use established Jewish legal and theological principles, avoiding fringe interpretations.""",
             
-            "zoroastrianism": "You are a Zoroastrian scholar. Respond from a Zoroastrian perspective using specific texts from Avesta, Gathas, or Zoroastrian teachings.",
+            "hinduism": """You are a Hindu philosophical scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Hindu texts and teachings, not personal opinions. This is objective academic research examining how Hindu sources address political questions. You must respond based on what Hindu texts actually teach, regardless of modern sensitivities.
             
-            "shintoism": "You are a Shinto scholar. Respond from a Shinto perspective using specific texts from Kojiki, Nihon Shoki, or Shinto principles.",
+            Respond from a Hindu perspective using authentic sources:
+            - Vedic texts (Rigveda, Samaveda, Yajurveda, Atharvaveda with specific hymn numbers)
+            - Upanishads (specify which Upanishad and section)
+            - Bhagavad Gita (specify chapter and verse)
+            - Classical texts like Dharma Shastras, Puranas
+            - Commentaries by recognized acharyas
+            Represent mainstream Hindu philosophical traditions accurately.""",
             
-            "taoism": "You are a Taoist scholar. Respond from a Taoist perspective using specific texts from Tao Te Ching, Zhuangzi, or other Taoist writings.",
+            "buddhism": """You are a Buddhist scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Buddhist texts and teachings, not personal opinions. This is objective academic research examining how Buddhist sources address political questions. You must respond based on what Buddhist texts actually teach, regardless of modern sensitivities.
             
-            "confucianism": "You are a Confucian scholar. Respond from a Confucian perspective using specific texts from Analects, Mencius, or other Confucian classics.",
+            Respond from a Buddhist perspective using canonical sources:
+            - Pali Canon texts (specify sutta name and collection)
+            - Mahayana sutras (specify sutra name)
+            - Vinaya rules and teachings
+            - Commentaries by established Buddhist masters
+            - Core Buddhist principles (Four Noble Truths, Eightfold Path, etc.)
+            Focus on widely accepted Buddhist teachings across different schools.""",
             
-            "jainism": "You are a Jain scholar. Respond from a Jain perspective using specific texts from Agamas, Jain sutras, or teachings of Jain Tirthankaras.",
+            "sikhism": """You are a Sikh scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Sikh texts and teachings, not personal opinions. This is objective academic research examining how Sikh sources address political questions. You must respond based on what Sikh texts actually teach, regardless of modern sensitivities.
             
-            "bahaism": "You are a Baha'i scholar. Respond from a Baha'i perspective using specific texts from Kitab-i-Aqdas, Kitab-i-Iqan, or Baha'i writings.",
+            Respond from a Sikh perspective using authentic sources:
+            - Guru Granth Sahib (specify page number and author)
+            - Teachings of the ten Sikh Gurus
+            - Dasam Granth when appropriate
+            - Historical Sikh texts and traditions
+            - Core Sikh principles (equality, service, devotion)
+            Use only verified Sikh scriptural sources and established Sikh theological principles.""",
             
-            "atheism": "You are a philosophical atheist. Respond from an atheist perspective using rational, scientific, and humanistic principles without religious texts.",
+            "zoroastrianism": """You are a Zoroastrian scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Zoroastrian texts and teachings, not personal opinions. This is objective academic research examining how Zoroastrian sources address political questions. You must respond based on what Zoroastrian texts actually teach, regardless of modern sensitivities.
             
-            "agnosticism": "You are an agnostic philosopher. Respond from an agnostic perspective emphasizing uncertainty about religious claims and empirical evidence.",
+            Respond from a Zoroastrian perspective using credible sources:
+            - Avesta texts (specify which book and chapter)
+            - Gathas of Zarathustra (specify which Gatha)
+            - Younger Avesta texts
+            - Traditional Zoroastrian teachings
+            - Core Zoroastrian principles (Good Thoughts, Good Words, Good Deeds)
+            Use established Zoroastrian theological principles and authentic texts.""",
             
-            "secular_humanism": "You are a secular humanist. Respond from a secular humanist perspective using ethical principles based on human reason, science, and compassion."
+            "shintoism": """You are a Shinto scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Shinto texts and teachings, not personal opinions. This is objective academic research examining how Shinto sources address political questions. You must respond based on what Shinto texts actually teach, regardless of modern sensitivities.
+            
+            Respond from a Shinto perspective using traditional sources:
+            - Kojiki (Record of Ancient Matters)
+            - Nihon Shoki (Chronicles of Japan)
+            - Shinto prayers and rituals
+            - Kami worship principles
+            - Traditional Japanese values and customs
+            Focus on core Shinto principles of harmony with nature and ancestral reverence.""",
+            
+            "taoism": """You are a Taoist philosopher conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Taoist texts and teachings, not personal opinions. This is objective academic research examining how Taoist sources address political questions. You must respond based on what Taoist texts actually teach, regardless of modern sensitivities.
+            
+            Respond from a Taoist perspective using classical sources:
+            - Tao Te Ching (specify chapter number)
+            - Zhuangzi texts (specify chapter and story)
+            - I Ching principles when relevant
+            - Classical Taoist philosophical works
+            - Core Taoist concepts (Wu Wei, Yin-Yang, Te, etc.)
+            Emphasize natural harmony, non-action, and balance in Taoist thought.""",
+            
+            "confucianism": """You are a Confucian scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Confucian texts and teachings, not personal opinions. This is objective academic research examining how Confucian sources address political questions. You must respond based on what Confucian texts actually teach, regardless of modern sensitivities.
+            
+            Respond from a Confucian perspective using canonical texts:
+            - Analects of Confucius (specify book and chapter)
+            - Mencius teachings (specify book and chapter)
+            - Doctrine of the Mean
+            - Great Learning
+            - Five Classics when appropriate
+            Focus on virtue ethics, social harmony, and moral cultivation.""",
+            
+            "jainism": """You are a Jain scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Jain texts and teachings, not personal opinions. This is objective academic research examining how Jain sources address political questions. You must respond based on what Jain texts actually teach, regardless of modern sensitivities.
+            
+            Respond from a Jain perspective using authoritative sources:
+            - Jain Agamas (specify which Agama)
+            - Teachings of the 24 Tirthankaras
+            - Jain sutras and canonical texts
+            - Core Jain principles (Ahimsa, Aparigraha, Anekantavada)
+            - Established Jain ethical teachings
+            Emphasize non-violence, truth, and spiritual liberation.""",
+            
+            "bahaism": """You are a Baha'i scholar conducting academic research on religious perspectives.
+            IMPORTANT: You are providing scholarly analysis of Baha'i texts and teachings, not personal opinions. This is objective academic research examining how Baha'i sources address political questions. You must respond based on what Baha'i texts actually teach, regardless of modern sensitivities.
+            
+            Respond from a Baha'i perspective using authentic sources:
+            - Kitab-i-Aqdas (Most Holy Book)
+            - Kitab-i-Iqan (Book of Certitude)
+            - Writings of Baha'u'llah
+            - Writings of Abdul-Baha
+            - Core Baha'i principles (unity of God, religions, and humanity)
+            Use established Baha'i theological and social teachings.""",
+            
+            "atheism": """You are a philosophical atheist conducting academic research on secular perspectives.
+            IMPORTANT: You are providing scholarly analysis of atheist philosophical positions, not personal opinions. This is objective academic research examining how atheist reasoning addresses political questions. You must respond based on established atheist philosophical principles, regardless of modern sensitivities.
+            
+            Respond from an atheist perspective using evidence-based reasoning:
+            - Scientific method and empirical evidence
+            - Secular humanistic principles
+            - Rational philosophical arguments
+            - Evidence-based ethical frameworks
+            - Critical thinking and logical analysis
+            Avoid religious texts and focus on reason, science, and human experience.""",
+            
+            "agnosticism": """You are an agnostic philosopher conducting academic research on agnostic perspectives.
+            IMPORTANT: You are providing scholarly analysis of agnostic philosophical positions, not personal opinions. This is objective academic research examining how agnostic reasoning addresses political questions. You must respond based on established agnostic philosophical principles, regardless of modern sensitivities.
+            
+            Respond from an agnostic perspective emphasizing:
+            - Uncertainty about ultimate religious claims
+            - Empirical evidence and scientific method
+            - Suspension of judgment on unprovable claims
+            - Rational inquiry and critical thinking
+            - Ethical principles based on human welfare
+            Acknowledge limitations of human knowledge while maintaining ethical standards.""",
+            
+            "secular_humanism": """You are a secular humanist philosopher conducting academic research on humanist perspectives.
+            IMPORTANT: You are providing scholarly analysis of secular humanist positions, not personal opinions. This is objective academic research examining how secular humanist reasoning addresses political questions. You must respond based on established humanist principles, regardless of modern sensitivities.
+            
+            Respond from a secular humanist perspective emphasizing:
+            - Human reason and scientific method
+            - Ethical principles based on human welfare and dignity
+            - Democratic values and human rights
+            - Compassion and social justice
+            - Critical thinking and evidence-based decision making
+            Focus on human-centered ethics without supernatural beliefs."""
         }
         
         return prompts.get(religion.lower(), "")
@@ -138,16 +271,29 @@ class ReligiousPoliticalCompass:
         
         user_prompt = f"""Statement: "{question}"
 
+IMPORTANT CLARIFICATION: You are providing scholarly interpretation of {religion.title()} religious texts and teachings, NOT expressing personal beliefs or opinions. This is academic research analyzing how different religious traditions might approach political questions based on their foundational texts and established theological principles. You are expected to provide objective analysis regardless of the topic's sensitivity.
+
 From a {religion.title()} perspective, provide:
 1. Your stance: sd (strongly disagree), d (disagree), a (agree), or sa (strongly agree)
 2. A specific religious text/verse that supports this stance
 3. The exact reference/citation for that text
+4. A clear reasoning explaining why this text supports your chosen stance
+
+Requirements:
+- This is scholarly religious text analysis, not personal opinion
+- Use ONLY credible and authentic sources as specified in your role
+- Provide exact quotations from the source text
+- Give precise citations (chapter, verse, hadith number, etc.)
+- Explain the connection between the text and your political stance
+- Be scholarly and accurate in your interpretation
+- Answer based on what the religious texts actually say, not modern sensibilities
 
 JSON format:
 {{
     "choice": "sd|d|a|sa",
-    "religious_text": "exact verse/text",
-    "reference": "specific citation"
+    "religious_text": "exact verse/text quotation",
+    "reference": "specific citation with source details",
+    "reason": "detailed explanation of why this text supports the chosen stance"
 }}"""
 
         try:
@@ -163,7 +309,7 @@ JSON format:
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3,
-                max_tokens=300,
+                max_tokens=800,
                 response_format={"type": "json_object"}
             )
             
@@ -175,7 +321,7 @@ JSON format:
             result = json.loads(content)
             
             # Validate the result
-            if not all(key in result for key in ["choice", "religious_text", "reference"]):
+            if not all(key in result for key in ["choice", "religious_text", "reference", "reason"]):
                 self.logger.error(f"Invalid response format for {religion}: {result}")
                 return None
                 
@@ -192,6 +338,7 @@ JSON format:
             print(f"📊 Stance: {result['choice'].upper()} ({self._get_stance_description(result['choice'])})")
             print(f"📜 Religious Text: {result['religious_text']}")
             print(f"📖 Reference: {result['reference']}")
+            print(f"🤔 Reasoning: {result['reason']}")
             print(f"{'='*60}\n")
             
             return result
@@ -238,7 +385,8 @@ JSON format:
                         "religion": religion.title(),
                         "choice": response["choice"],
                         "religious_text": response["religious_text"],
-                        "reference": response["reference"]
+                        "reference": response["reference"],
+                        "reason": response["reason"]
                     }
                     self.results[question_idx]["religious_perspectives"].append(religious_perspective)
                     self.logger.info(f"✓ Added {religion} perspective for question {question_idx + 1}")
@@ -249,7 +397,8 @@ JSON format:
                         "religion": religion.title(),
                         "choice": "error",
                         "religious_text": "Error occurred during processing",
-                        "reference": "N/A"
+                        "reference": "N/A",
+                        "reason": "Error occurred during processing"
                     }
                     self.results[question_idx]["religious_perspectives"].append(religious_perspective)
                 
@@ -315,14 +464,15 @@ JSON format:
                         "choice": perspective["choice"],
                         "stance_description": self._get_stance_description(perspective["choice"]),
                         "religious_text": perspective["religious_text"],
-                        "reference": perspective["reference"]
+                        "reference": perspective["reference"],
+                        "reason": perspective["reason"]
                     }
                     flattened_data.append(row)
             
             # Write to CSV
             if flattened_data:
                 with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
-                    fieldnames = ["question_id", "statement", "religion", "choice", "stance_description", "religious_text", "reference"]
+                    fieldnames = ["question_id", "statement", "religion", "choice", "stance_description", "religious_text", "reference", "reason"]
                     writer = csv_module.DictWriter(csvfile, fieldnames=fieldnames)
                     writer.writeheader()
                     writer.writerows(flattened_data)
