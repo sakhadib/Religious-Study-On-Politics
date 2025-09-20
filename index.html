@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Religious Political Compass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Basic styles and font loading */
+        [x-cloak] { display: none !important; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #1e293b; /* Dark slate for better contrast */
+            min-height: 100vh;
+        }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Custom color classes for stance indicators */
+        /* Strongly Agree - Darker Green */
+        .bg-green-100 { background-color: #dcfce7; }
+        .border-green-300 { border-color: #86efac; }
+        .text-green-800 { color: #166534; }
+        
+        /* Agree - Light Green */
+        .bg-green-25 { background-color: #f0fdf4; }
+        .border-green-150 { border-color: #bbf7d0; }
+        .text-green-700 { color: #15803d; }
+        
+        /* Disagree - Light Red */
+        .bg-red-25 { background-color: #fef2f2; }
+        .border-red-150 { border-color: #fecaca; }
+        .text-red-700 { color: #b91c1c; }
+        
+        /* Strongly Disagree - Darker Red */
+        .bg-red-100 { background-color: #fee2e2; }
+        .border-red-300 { border-color: #fca5a5; }
+        .text-red-800 { color: #991b1b; }
+        
+        /* Smooth transitions for better performance */
+        .transition-transform { transition: transform 0.2s ease; }
+        .transition-colors { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+        
+        /* Optimize animations */
+        .transition-all { transition: all 0.2s ease; }
+        
+        /* Modern shadow utilities */
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        
+        /* Modern border radius */
+        .rounded-xl { border-radius: 0.75rem; }
+        
+        /* Enhanced hover states */
+        .hover\:shadow-sm:hover { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        .hover\:shadow-md:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Alpine.js component initialization -->
+    <div x-data="politicalCompass()" x-cloak class="flex-grow">
+
+        <!-- Header -->
+        <header class="bg-gradient-to-br from-slate-50 to-slate-100 border-b border-slate-200/60">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-2xl mb-6">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                </div>
+                <h1 class="text-5xl font-bold text-slate-900 tracking-tight mb-4">
+                    Religious Political Compass
+                </h1>
+                <p class="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                    Explore how different religious traditions approach political questions through their sacred texts and teachings
+                </p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full">
+            
+            <!-- Loading State -->
+            <div x-show="loading" class="text-center py-16">
+                <div class="inline-block animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-slate-600"></div>
+                <p class="mt-4 text-slate-500">Loading questions and perspectives...</p>
+            </div>
+
+            <!-- Error State -->
+            <div x-show="error" class="text-center py-16 bg-red-50 rounded-lg">
+                <div class="text-red-500 mb-4">
+                    <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-xl font-semibold text-red-800 mb-2">Unable to Load Data</h3>
+                <p class="text-red-700 mb-6">We had trouble loading the information. Please check your connection.</p>
+                <button @click="loadData()" class="bg-slate-700 text-white px-6 py-2.5 rounded-lg hover:bg-slate-800 transition-colors shadow">
+                    Try Again
+                </button>
+            </div>
+
+            <!-- Content Area -->
+            <div x-show="!loading && !error" class="transition-all duration-300">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-3">Explore Political Questions</h2>
+                    <p class="text-slate-600 text-lg max-w-3xl mx-auto">Discover how different religious traditions approach political questions through their sacred texts and teachings.</p>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- View 1: Questions List -->
+                    <template x-for="(question, index) in questions" :key="question.question_id">
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200" :class="{'shadow-lg border-slate-300 ring-1 ring-slate-200': isQuestionSelected(question.question_id)}">
+                            <button @click="selectQuestion(question)" class="w-full text-left p-8 hover:bg-slate-50/30 transition-colors duration-150 rounded-xl">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1 pr-6">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-600 text-sm font-semibold" x-text="index + 1"></span>
+                                            <span class="text-sm font-medium text-slate-500 uppercase tracking-wide">Political Question</span>
+                                        </div>
+                                        <p class="text-xl text-slate-800 font-semibold leading-relaxed" x-text="question.statement"></p>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2 flex-shrink-0">
+                                        <svg class="w-6 h-6 text-slate-400 transition-transform duration-200" :class="{'rotate-90': isQuestionSelected(question.question_id)}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                        <span class="text-xs text-slate-400 font-medium" x-text="question.religious_perspectives.length + ' religions'"></span>
+                                    </div>
+                                </div>
+                            </button>
+                            
+                            <!-- View 2: Religion Stances Overview -->
+                            <div x-show="isQuestionSelected(question.question_id)" x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 transform -translate-y-3" x-transition:enter-end="opacity-100 transform translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform translate-y-0" x-transition:leave-end="opacity-0 transform -translate-y-3" class="border-t border-slate-200 bg-slate-50/30">
+                                <div class="p-8 pt-6">
+                                    <h3 class="text-lg font-semibold text-slate-700 mb-6">Religious Perspectives</h3>
+                                    <div class="grid gap-3">
+                                        <template x-for="perspective in question.religious_perspectives" :key="perspective.religion">
+                                            <div class="border rounded-lg transition-all duration-150 hover:shadow-sm" :class="getStanceColorClass(perspective.choice)">
+                                                <button @click="selectReligion(perspective, question.question_id)" class="w-full text-left p-5 hover:bg-black/5 transition-colors duration-150 rounded-lg">
+                                                    <div class="flex justify-between items-center">
+                                                        <div class="flex items-center gap-4">
+                                                            <h4 class="text-lg font-semibold" x-text="formatReligionName(perspective.religion)"></h4>
+                                                            <span class="text-sm font-medium px-3 py-1.5 rounded-full" :class="getStanceColorClass(perspective.choice)" x-text="getChoiceLabel(perspective.choice)"></span>
+                                                        </div>
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="text-xs text-current/70 font-medium">View Details</span>
+                                                            <svg class="w-4 h-4 opacity-60 transition-transform duration-200" :class="{'rotate-90': isReligionSelected(perspective, question.question_id)}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                                
+                                                <!-- View 3: Full Religion Details -->
+                                                <div x-show="isReligionSelected(perspective, question.question_id)" x-transition:enter="transition ease-out duration-250" x-transition:enter-start="opacity-0 max-h-0" x-transition:enter-end="opacity-100 max-h-screen" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 max-h-screen" x-transition:leave-end="opacity-0 max-h-0" class="overflow-hidden">
+                                                    <div class="border-t bg-white/60 p-6 rounded-b-lg">
+                                                        <div class="space-y-6">
+                                                            <div>
+                                                                <h5 class="font-semibold text-slate-800 text-sm mb-3 uppercase tracking-wide">Sacred Text / Teaching</h5>
+                                                                <blockquote class="border-l-4 border-current/30 pl-6 py-3 bg-white/50 rounded-r-lg">
+                                                                    <p class="text-slate-800 leading-relaxed font-medium text-lg italic" x-text="perspective.religious_text"></p>
+                                                                </blockquote>
+                                                            </div>
+                                                            <div>
+                                                                <h5 class="font-semibold text-slate-800 text-sm mb-3 uppercase tracking-wide">Source Reference</h5>
+                                                                <div class="bg-slate-100 border border-slate-200 p-4 rounded-lg">
+                                                                    <p class="text-slate-700 font-mono text-sm" x-text="perspective.reference"></p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="text-center text-slate-500">
+                <p class="font-semibold">Religious Political Compass Project</p>
+                <p class="text-sm mt-2 max-w-2xl mx-auto">
+                    This project is for educational purposes to explore interpretations of religious texts. These perspectives are not definitive positions.
+                </p>
+                <div class="mt-4 text-sm">
+                    <a href="https://github.com/sakhadib/Religious-Study-On-Politics" class="text-slate-600 hover:text-slate-900 font-medium transition-colors">
+                        View on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Assumes data.js provides RELIGIOUS_DATA -->
+    <script src="data.js"></script>
+    <script>
+        function politicalCompass() {
+            return {
+                loading: true,
+                error: false,
+                questions: [],
+                selectedQuestionId: null,
+                selectedReligionKey: null,
+                
+                // Cached choice labels for better performance
+                choiceLabels: {
+                    'sa': 'Strongly Agree',
+                    'a': 'Agree', 
+                    'd': 'Disagree',
+                    'sd': 'Strongly Disagree'
+                },
+                
+                // Color classes for different stances
+                stanceColors: {
+                    'sa': 'bg-green-100 border-green-300 text-green-800',  // Strongly Agree - Darker Green
+                    'a': 'bg-green-25 border-green-150 text-green-700',    // Agree - Light Green
+                    'd': 'bg-red-25 border-red-150 text-red-700',          // Disagree - Light Red
+                    'sd': 'bg-red-100 border-red-300 text-red-800'         // Strongly Disagree - Darker Red
+                },
+                
+                init() {
+                    this.loadData();
+                },
+                
+                loadData() {
+                    this.loading = true;
+                    this.error = false;
+                    
+                    try {
+                        if (typeof RELIGIOUS_DATA === 'undefined' || !RELIGIOUS_DATA || RELIGIOUS_DATA.length === 0) {
+                            throw new Error('Survey data is not available.');
+                        }
+                        
+                        // Reduce timeout for faster loading
+                        setTimeout(() => {
+                            this.questions = RELIGIOUS_DATA;
+                            this.loading = false;
+                        }, 200);
+                        
+                    } catch (err) {
+                        console.error('Error loading data:', err);
+                        this.error = true;
+                        this.loading = false;
+                    }
+                },
+                
+                // Optimized question selection with ID comparison
+                selectQuestion(question) {
+                    const questionId = question.question_id;
+                    if (this.selectedQuestionId === questionId) {
+                        this.selectedQuestionId = null;
+                        this.selectedReligionKey = null; 
+                    } else {
+                        this.selectedQuestionId = questionId;
+                        this.selectedReligionKey = null;
+                    }
+                },
+                
+                // Optimized religion selection with composite key
+                selectReligion(religion, questionId) {
+                    const religionKey = `${questionId}-${religion.religion}`;
+                    if (this.selectedReligionKey === religionKey) {
+                        this.selectedReligionKey = null;
+                    } else {
+                        this.selectedReligionKey = religionKey;
+                    }
+                },
+                
+                // Check if question is selected (optimized)
+                isQuestionSelected(questionId) {
+                    return this.selectedQuestionId === questionId;
+                },
+                
+                // Check if religion is selected (optimized)
+                isReligionSelected(religion, questionId) {
+                    return this.selectedReligionKey === `${questionId}-${religion.religion}`;
+                },
+                
+                // Get selected question object (cached)
+                getSelectedQuestion() {
+                    if (!this.selectedQuestionId) return null;
+                    return this.questions.find(q => q.question_id === this.selectedQuestionId);
+                },
+                
+                // Get selected religion object (cached)
+                getSelectedReligion() {
+                    if (!this.selectedReligionKey) return null;
+                    const [questionId, religionName] = this.selectedReligionKey.split('-');
+                    const question = this.getSelectedQuestion();
+                    if (!question) return null;
+                    return question.religious_perspectives.find(r => r.religion === religionName);
+                },
+                
+                formatReligionName(religion) {
+                    if (!religion) return '';
+                    return religion.replace(/_/g, ' ')
+                                   .replace(/\b\w/g, l => l.toUpperCase());
+                },
+                
+                getChoiceLabel(choice) {
+                    return this.choiceLabels[choice] || choice;
+                },
+                
+                // Get stance color classes
+                getStanceColorClass(choice) {
+                    return this.stanceColors[choice] || 'bg-gray-50 border-gray-200 text-gray-700';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

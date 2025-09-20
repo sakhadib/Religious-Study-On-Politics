@@ -40,6 +40,7 @@ The project analyzes perspectives from:
 ## 🛠️ Features
 
 - **AI-Powered Analysis**: Uses OpenRouter API to query advanced language models
+- **Interactive Web Interface**: Beautiful web app to explore questions and religious perspectives
 - **Structured Output**: JSON responses with political stance, religious text, and citations
 - **Data Transformation**: Converts survey results to analysis-ready formats
 - **Visualization**: Generates political compass plots with quadrant analysis
@@ -56,11 +57,15 @@ islamic_political_compass/
 ├── separator.py                               # Data transformation from long to wide format
 ├── plot.py                                   # Political compass visualization generator
 ├── json_to_csv.py                            # JSON to CSV format converter
+├── json_to_js.py                             # Convert JSON data to JavaScript format
+├── index.html                                # Interactive web interface for GitHub Pages
+├── data.js                                   # JavaScript version of survey data
 ├── questions.csv                             # 62 political compass questions
 ├── requirements.txt                          # Python dependencies
 ├── .env                                     # API keys (not in repo)
 ├── .gitignore                               # Git ignore patterns
 ├── README.md                                # Project documentation
+├── DEPLOYMENT.md                             # GitHub Pages deployment guide
 │
 ├── religious_perspectives_on_political_compass.json  # Raw survey results (timestamped)
 ├── religious_perspectives_on_political_compass.csv   # Flattened survey data (timestamped)  
@@ -72,6 +77,12 @@ islamic_political_compass/
 ├── .venv/                                   # Python virtual environment
 └── __pycache__/                            # Python bytecode cache
 ```
+
+## 🌐 Live Demo
+
+**[View Interactive Web Interface →](https://sakhadib.github.io/Religious-Study-On-Politics/)**
+
+Explore all 62 questions and religious perspectives through our beautiful web interface.
 
 ## 🚀 Quick Start
 
