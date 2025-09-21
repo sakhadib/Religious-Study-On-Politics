@@ -10,6 +10,7 @@ import csv
 import argparse
 import logging
 import time
+import requests
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from openai import OpenAI
@@ -60,6 +61,11 @@ class ReligiousPoliticalCompass:
         ]
         self.results = []
         
+        # Initialize Telegram settings
+        self.tg_bot_token = os.getenv('TG_BOT_TOKEN')
+        self.tg_chat_id = os.getenv('TG_CHAT_ID')
+        self.tg_thread_id = os.getenv('TG_THREAD_ID')
+        
         # Initialize OpenAI client with OpenRouter
         self._setup_client()
         
@@ -74,6 +80,80 @@ class ReligiousPoliticalCompass:
             api_key=api_key,
         )
         self.logger.info(f"Initialized OpenRouter client with model: {self.model_name}")
+    
+    def send_to_telegram(self, message: str) -> bool:
+        """Send message to Telegram"""
+        if not all([self.tg_bot_token, self.tg_chat_id]):
+            self.logger.warning("Telegram credentials not configured, skipping message")
+            return False
+        
+        url = f"https://api.telegram.org/bot{self.tg_bot_token}/sendMessage"
+        
+        payload = {
+            'chat_id': self.tg_chat_id,
+            'text': message,
+            'parse_mode': 'HTML'
+        }
+        
+        # Add thread_id if specified
+        if self.tg_thread_id:
+            payload['message_thread_id'] = self.tg_thread_id
+        
+        try:
+            response = requests.post(url, data=payload, timeout=10)
+            response.raise_for_status()
+            self.logger.info("Message sent to Telegram successfully")
+            return True
+        except requests.exceptions.RequestException as e:
+            self.logger.error(f"Failed to send message to Telegram: {e}")
+            return False
+    
+    def format_telegram_message(self, question_text: str, question_id: str, religion: str, 
+                               choice: str, religious_text: str, reference: str, reason: str) -> str:
+        """Format message for Telegram without markdown or emojis"""
+        stance_description = self._get_stance_description(choice)
+        
+        message = f"""RELIGIOUS POLITICAL COMPASS ANALYSIS
+
+
+Question ID: {question_id}
+
+
+Political Statement:
+{question_text}
+
+
+
+
+Religious Perspective: {religion.upper()}
+
+
+Stance: {choice.upper()} ({stance_description})
+
+
+
+
+Sacred Text or Teaching:
+{religious_text}
+
+
+
+
+Source Reference:
+{reference}
+
+
+
+
+Scholarly Reasoning:
+{reason}
+
+
+
+
+AI Assisted Analysis by Gemini 2.5 Flash"""
+        
+        return message
     
     def load_questions(self, csv_file: str = "questions.csv"):
         """Load questions from CSV file"""
@@ -352,6 +432,25 @@ JSON format:
         self.logger.info("Starting political compass survey from religious perspectives")
         self.logger.info(f"Survey parameters: {len(self.questions)} questions × {len(self.religions)} religions = {len(self.questions) * len(self.religions)} total queries")
         
+        # Send survey start notification to Telegram
+        start_message = f"""RELIGIOUS POLITICAL COMPASS SURVEY STARTED
+
+
+Model: {self.model_name}
+
+
+Total Questions: {len(self.questions)}
+Total Religions: {len(self.religions)}
+Total Expected Responses: {len(self.questions) * len(self.religions)}
+
+
+Starting analysis of religious perspectives on political questions...
+
+
+AI Assisted Analysis by Gemini 2.5 Flash"""
+        
+        self.send_to_telegram(start_message)
+        
         # Initialize results structure
         for i, question in enumerate(self.questions):
             question_result = {
@@ -390,6 +489,24 @@ JSON format:
                     }
                     self.results[question_idx]["religious_perspectives"].append(religious_perspective)
                     self.logger.info(f"✓ Added {religion} perspective for question {question_idx + 1}")
+                    
+                    # Send to Telegram
+                    telegram_message = self.format_telegram_message(
+                        question_text=question["question_text"],
+                        question_id=question["question_id"],
+                        religion=religion,
+                        choice=response["choice"],
+                        religious_text=response["religious_text"],
+                        reference=response["reference"],
+                        reason=response["reason"]
+                    )
+                    
+                    # Send with a small delay to avoid rate limiting
+                    if self.send_to_telegram(telegram_message):
+                        self.logger.info(f"✓ Sent {religion} perspective to Telegram")
+                        time.sleep(1)  # 1 second delay between messages
+                    else:
+                        self.logger.warning(f"⚠ Failed to send {religion} perspective to Telegram")
                 else:
                     self.logger.error(f"✗ Failed to get {religion} perspective for question {question_idx + 1}")
                     # Add a placeholder to maintain structure
@@ -412,6 +529,34 @@ JSON format:
         print(f"🎉 ALL SURVEYS COMPLETED SUCCESSFULLY! 🎉")
         print(f"📊 Total responses collected: {len(self.questions) * len(self.religions)}")
         self.logger.info("Survey completed successfully!")
+        
+        # Send completion notification to Telegram
+        total_responses = sum(len(q["religious_perspectives"]) for q in self.results)
+        successful_responses = sum(
+            1 for q in self.results 
+            for p in q["religious_perspectives"] 
+            if p.get("choice", "error") != "error"
+        )
+        
+        completion_message = f"""RELIGIOUS POLITICAL COMPASS SURVEY COMPLETED
+
+
+Model: {self.model_name}
+
+
+Final Results:
+Total Questions Processed: {len(self.questions)}
+Total Religious Perspectives: {total_responses}
+Successful Responses: {successful_responses}
+Success Rate: {(successful_responses/total_responses*100):.1f}%
+
+
+Survey completed successfully!
+
+
+AI Assisted Analysis by Gemini 2.5 Flash"""
+        
+        self.send_to_telegram(completion_message)
     
     def save_results(self, filename: Optional[str] = None):
         """Save results to JSON file"""
