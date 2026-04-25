@@ -73,19 +73,41 @@
     <div x-data="politicalCompass()" x-cloak class="flex-grow">
 
         <!-- Header -->
-        <header class="bg-gradient-to-br from-slate-50 to-slate-100 border-b border-slate-200/60">
-            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-800 rounded-2xl mb-6">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <header class="relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-slate-50 to-purple-50"></div>
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23a855f7' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center relative">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl mb-6 shadow-xl transform hover:scale-105 transition-transform duration-300">
+                    <svg class="w-10 h-10 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                     </svg>
                 </div>
-                <h1 class="text-5xl font-bold text-slate-900 tracking-tight mb-4">
+                <h1 class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 tracking-tight mb-4 filter drop-shadow-sm">
                     Religious Political Compass
                 </h1>
-                <p class="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                <p class="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed backdrop-blur-sm">
                     Explore how different religious traditions approach political questions through their sacred texts and teachings
                 </p>
+                <div class="mt-8 flex gap-4 justify-center">
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        AI Powered Analysis
+                    </span>
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                        </svg>
+                        Religious Perspectives
+                    </span>
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        Multi-Model Analysis
+                    </span>
+                </div>
             </div>
         </header>
 
@@ -112,15 +134,105 @@
 
             <!-- Content Area -->
             <div x-show="!loading && !error" class="transition-all duration-300">
-                <div class="text-center mb-12">
+                <div class="text-center mb-8">
                     <h2 class="text-3xl font-bold text-slate-800 mb-3">Explore Political Questions</h2>
                     <p class="text-slate-600 text-lg max-w-3xl mx-auto">Discover how different religious traditions approach political questions through their sacred texts and teachings.</p>
+                </div>
+
+                <!-- Model & Mode Selection Controls -->
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-6 mb-8">
+                    <div class="grid lg:grid-cols-2 gap-6">
+                        <!-- Model Selection -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">AI Model Selection</h3>
+                            <div class="space-y-3">
+                                <template x-for="model in availableModels" :key="model.id">
+                                    <label class="flex items-center p-3 border rounded-lg cursor-pointer transition-all hover:bg-slate-50" :class="selectedModel === model.id ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-200'">
+                                        <input type="radio" :value="model.id" x-model="selectedModel" class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300">
+                                        <div class="ml-3 flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-medium text-slate-800" x-text="model.name"></span>
+                                                <span x-show="model.badge" class="text-xs px-2 py-1 rounded-full font-medium"
+                                                    :class="{
+                                                        'bg-gradient-to-r from-blue-500 to-blue-600 text-white': model.id === 'grok',
+                                                        'bg-gradient-to-r from-purple-500 to-purple-600 text-white': model.id === 'llama',
+                                                        'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white': model.id === 'gemini'
+                                                    }"
+                                                    x-text="model.badge">
+                                                </span>
+                                            </div>
+                                            <div class="flex flex-col gap-1">
+                                                <p class="text-sm text-slate-600" x-text="model.description"></p>
+                                                <div class="flex items-center gap-2 mt-1" x-show="model.id === selectedModel">
+                                                    <span class="inline-flex items-center gap-1 text-xs font-medium text-blue-600">
+                                                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                        </svg>
+                                                        Currently Selected
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- View Mode Selection -->
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">View Mode</h3>
+                            <div class="space-y-3">
+                                <template x-for="mode in viewModes" :key="mode.id">
+                                    <label class="flex items-center p-3 border rounded-lg cursor-pointer transition-all hover:bg-slate-50" :class="viewMode === mode.id ? 'border-purple-500 bg-purple-50 ring-1 ring-purple-200' : 'border-slate-200'">
+                                        <input type="radio" :value="mode.id" x-model="viewMode" class="w-4 h-4 text-purple-600 focus:ring-purple-500 border-slate-300">
+                                        <div class="ml-3 flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-medium text-slate-800" x-text="mode.name"></span>
+                                                <span class="text-xs" :class="mode.id === 'single' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'" x-text="mode.badge"></span>
+                                            </div>
+                                            <p class="text-sm text-slate-600" x-text="mode.description"></p>
+                                        </div>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Mode Additional Controls -->
+                    <div x-show="viewMode === 'compare-models'" x-transition class="mt-6 pt-6 border-t border-slate-200">
+                        <h4 class="text-md font-semibold text-slate-800 mb-3">Select Models to Compare</h4>
+                        <div class="grid sm:grid-cols-3 gap-3">
+                            <template x-for="model in availableModels" :key="model.id">
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer transition-all hover:bg-slate-50" :class="compareModels.includes(model.id) ? 'border-orange-500 bg-orange-50 ring-1 ring-orange-200' : 'border-slate-200'">
+                                    <input type="checkbox" :value="model.id" x-model="compareModels" class="w-4 h-4 text-orange-600 focus:ring-orange-500 border-slate-300">
+                                    <span class="ml-2 font-medium text-slate-800" x-text="model.name"></span>
+                                </label>
+                            </template>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-2">Select 2-3 models to compare their responses</p>
+                    </div>
+
+                    <div x-show="viewMode === 'compare-religions'" x-transition class="mt-6 pt-6 border-t border-slate-200">
+                        <h4 class="text-md font-semibold text-slate-800 mb-3">Select Religions to Compare</h4>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <template x-for="religion in availableReligions" :key="religion">
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer transition-all hover:bg-slate-50" :class="compareReligions.includes(religion) ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-200' : 'border-slate-200'">
+                                    <input type="checkbox" :value="religion" x-model="compareReligions" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300">
+                                    <span class="ml-2 font-medium text-slate-800" x-text="formatReligionName(religion)"></span>
+                                </label>
+                            </template>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-2">Select 2-5 religions to compare their perspectives</p>
+                    </div>
                 </div>
                 
                 <div class="space-y-6">
                     <!-- View 1: Questions List -->
                     <template x-for="(question, index) in questions" :key="question.question_id">
-                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200" :class="{'shadow-lg border-slate-300 ring-1 ring-slate-200': isQuestionSelected(question.question_id)}">
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 group" 
+                            :class="{
+                                'shadow-lg border-blue-200 ring-1 ring-blue-100 bg-gradient-to-r from-blue-50/30 to-transparent': isQuestionSelected(question.question_id)
+                            }"
                             <button @click="selectQuestion(question)" class="w-full text-left p-8 hover:bg-slate-50/30 transition-colors duration-150 rounded-xl">
                                 <div class="flex justify-between items-start">
                                     <div class="flex-1 pr-6">
@@ -173,14 +285,15 @@
                                                                     <p class="text-slate-700 font-mono text-sm" x-text="perspective.reference"></p>
                                                                 </div>
                                                             </div>
-                                                            <div>
+                                                            <!-- Single Model View -->
+                                                            <div x-show="viewMode === 'single'">
                                                                 <div class="flex items-center justify-between mb-3">
                                                                     <h5 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Scholarly Reasoning</h5>
                                                                     <div class="flex items-center gap-1.5 text-xs text-slate-500">
                                                                         <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                                                         </svg>
-                                                                        <span class="font-medium">AI Assisted Analysis by Gemini 2.5 Flash</span>
+                                                                        <span class="font-medium" x-text="'AI Analysis by ' + getModelName(selectedModel)"></span>
                                                                     </div>
                                                                 </div>
                                                                 <div class="bg-blue-50 border border-blue-200 p-5 rounded-lg">
@@ -193,6 +306,48 @@
                                                                         <p class="text-slate-700 leading-relaxed" x-text="perspective.reason || 'No reasoning provided'"></p>
                                                                     </div>
                                                                 </div>
+                                                            </div>
+
+                                                            <!-- Model Comparison View -->
+                                                            <div x-show="viewMode === 'compare-models'" class="space-y-4">
+                                                                <h5 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Model Comparison</h5>
+                                                                <template x-for="modelId in compareModels" :key="modelId">
+                                                                    <div class="border-l-4 pl-4" :class="getModelBorderColor(modelId)">
+                                                                        <div class="flex items-center gap-2 mb-2">
+                                                                            <h6 class="font-semibold text-slate-800" x-text="getModelName(modelId)"></h6>
+                                                                            <span class="text-sm px-2 py-1 rounded" :class="getModelStanceColor(getModelPerspective(perspective.religion, question.question_id, modelId)?.choice)" x-text="getChoiceLabel(getModelPerspective(perspective.religion, question.question_id, modelId)?.choice)"></span>
+                                                                        </div>
+                                                                        <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg mb-3">
+                                                                            <p class="text-sm font-medium text-slate-600 mb-2">Religious Text:</p>
+                                                                            <p class="text-slate-700 italic" x-text="getModelPerspective(perspective.religion, question.question_id, modelId)?.religious_text || 'Not available'"></p>
+                                                                        </div>
+                                                                        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                                                                            <p class="text-sm font-medium text-blue-800 mb-2">Reasoning:</p>
+                                                                            <p class="text-blue-700 text-sm leading-relaxed" x-text="getModelPerspective(perspective.religion, question.question_id, modelId)?.reason || 'Not available'"></p>
+                                                                        </div>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+
+                                                            <!-- Religion Comparison View -->
+                                                            <div x-show="viewMode === 'compare-religions'" class="space-y-4">
+                                                                <h5 class="font-semibold text-slate-800 text-sm uppercase tracking-wide">Religious Perspectives Comparison</h5>
+                                                                <template x-for="religionName in compareReligions" :key="religionName">
+                                                                    <div class="border-l-4 border-indigo-400 pl-4">
+                                                                        <div class="flex items-center gap-2 mb-2">
+                                                                            <h6 class="font-semibold text-slate-800" x-text="formatReligionName(religionName)"></h6>
+                                                                            <span class="text-sm px-2 py-1 rounded" :class="getStanceColorClass(getReligionPerspective(religionName, question.question_id)?.choice)" x-text="getChoiceLabel(getReligionPerspective(religionName, question.question_id)?.choice)"></span>
+                                                                        </div>
+                                                                        <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg mb-3">
+                                                                            <p class="text-sm font-medium text-slate-600 mb-2">Religious Text:</p>
+                                                                            <p class="text-slate-700 italic" x-text="getReligionPerspective(religionName, question.question_id)?.religious_text || 'Not available'"></p>
+                                                                        </div>
+                                                                        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg">
+                                                                            <p class="text-sm font-medium text-indigo-800 mb-2">Reasoning:</p>
+                                                                            <p class="text-indigo-700 text-sm leading-relaxed" x-text="getReligionPerspective(religionName, question.question_id)?.reason || 'Not available'"></p>
+                                                                        </div>
+                                                                    </div>
+                                                                </template>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -222,7 +377,7 @@
                         <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
-                        <span class="text-slate-600 font-medium">AI Assisted Analysis by Gemini 2.5</span>
+                        <span class="text-slate-600 font-medium">AI Assisted Analysis by Multiple Models</span>
                     </div>
                     <div class="text-sm">
                         <a href="https://github.com/sakhadib/Religious-Study-On-Politics" class="text-slate-600 hover:text-slate-900 font-medium transition-colors">
@@ -234,8 +389,10 @@
         </div>
     </footer>
 
-    <!-- Assumes data.js provides RELIGIOUS_DATA -->
-    <script src="data.js"></script>
+    <!-- Load all model data files -->
+    <script src="data_gemini.js"></script>
+    <script src="data_grok.js"></script>
+    <script src="data_llama.js"></script>
     <script>
         function politicalCompass() {
             return {
@@ -244,6 +401,36 @@
                 questions: [],
                 selectedQuestionId: null,
                 selectedReligionKey: null,
+                
+                // Model and view mode selection
+                selectedModel: 'grok', // Default to Grok
+                viewMode: 'single', // single, compare-models, compare-religions
+                compareModels: ['grok', 'gemini'], // Default comparison
+                compareReligions: [], // User selects
+                
+                // Available models
+                availableModels: [
+                    { id: 'grok', name: 'Grok-4', description: 'Latest generation AI with advanced theological reasoning', badge: 'Recommended' },
+                    { id: 'llama', name: 'LLaMA-3-405B', description: 'High-precision open source model with enhanced religious context', badge: 'Performance' },
+                    { id: 'gemini', name: 'Gemini 2.5 Pro', description: 'Professional-grade analysis with comprehensive theological insights', badge: 'Pro' }
+                ],
+                
+                // View modes
+                viewModes: [
+                    { id: 'single', name: 'Single Model', badge: 'Standard', description: 'View responses from one AI model' },
+                    { id: 'compare-models', name: 'Compare Models', badge: 'Advanced', description: 'Compare responses across different AI models' },
+                    { id: 'compare-religions', name: 'Compare Religions', badge: 'Analysis', description: 'Compare different religious perspectives' }
+                ],
+                
+                // Model data storage
+                modelData: {
+                    'grok': null,
+                    'gemini': null,
+                    'llama': null
+                },
+                
+                // Available religions list
+                availableReligions: [],
                 
                 // Cached choice labels for better performance
                 choiceLabels: {
@@ -261,6 +448,13 @@
                     'sd': 'bg-red-100 border-red-300 text-red-800'         // Strongly Disagree - Darker Red
                 },
                 
+                // Model-specific colors for comparison
+                modelColors: {
+                    'grok': 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100/50',
+                    'gemini': 'border-emerald-500 bg-gradient-to-r from-emerald-50 to-emerald-100/50', 
+                    'llama': 'border-purple-500 bg-gradient-to-r from-purple-50 to-purple-100/50'
+                },
+                
                 init() {
                     this.loadData();
                 },
@@ -270,13 +464,31 @@
                     this.error = false;
                     
                     try {
-                        if (typeof RELIGIOUS_DATA === 'undefined' || !RELIGIOUS_DATA || RELIGIOUS_DATA.length === 0) {
-                            throw new Error('Survey data is not available.');
+                        // Load data from all models
+                        this.modelData.grok = typeof RELIGIOUS_DATA_GROK !== 'undefined' ? RELIGIOUS_DATA_GROK : null;
+                        this.modelData.gemini = typeof RELIGIOUS_DATA_GEMINI !== 'undefined' ? RELIGIOUS_DATA_GEMINI : null;
+                        this.modelData.llama = typeof RELIGIOUS_DATA_LLAMA !== 'undefined' ? RELIGIOUS_DATA_LLAMA : null;
+                        
+                        // Use Grok as default, fallback to available models
+                        let defaultData = this.modelData.grok || this.modelData.gemini || this.modelData.llama;
+                        
+                        if (!defaultData || defaultData.length === 0) {
+                            throw new Error('Survey data is not available from any model.');
                         }
+                        
+                        // Set questions from default model and extract available religions
+                        this.questions = defaultData;
+                        this.availableReligions = [...new Set(
+                            defaultData.flatMap(q => q.religious_perspectives.map(p => p.religion))
+                        )].sort();
+                        
+                        // Update questions based on selected model
+                        this.$watch('selectedModel', () => {
+                            this.updateQuestionsForModel();
+                        });
                         
                         // Reduce timeout for faster loading
                         setTimeout(() => {
-                            this.questions = RELIGIOUS_DATA;
                             this.loading = false;
                         }, 200);
                         
@@ -284,6 +496,16 @@
                         console.error('Error loading data:', err);
                         this.error = true;
                         this.loading = false;
+                    }
+                },
+                
+                updateQuestionsForModel() {
+                    const modelData = this.modelData[this.selectedModel];
+                    if (modelData && modelData.length > 0) {
+                        this.questions = modelData;
+                        // Reset selections when changing models
+                        this.selectedQuestionId = null;
+                        this.selectedReligionKey = null;
                     }
                 },
                 
@@ -347,6 +569,50 @@
                 // Get stance color classes
                 getStanceColorClass(choice) {
                     return this.stanceColors[choice] || 'bg-gray-50 border-gray-200 text-gray-700';
+                },
+                
+                // Get model stance color for comparison
+                getModelStanceColor(choice) {
+                    const baseColors = {
+                        'sa': 'bg-green-100 text-green-800',
+                        'a': 'bg-green-50 text-green-700',
+                        'd': 'bg-red-50 text-red-700',
+                        'sd': 'bg-red-100 text-red-800'
+                    };
+                    return baseColors[choice] || 'bg-gray-50 text-gray-700';
+                },
+                
+                // Get model name for display
+                getModelName(modelId) {
+                    const model = this.availableModels.find(m => m.id === modelId);
+                    return model ? model.name : modelId;
+                },
+                
+                // Get model border color for comparison
+                getModelBorderColor(modelId) {
+                    return this.modelColors[modelId] || 'border-gray-400';
+                },
+                
+                // Get perspective from specific model
+                getModelPerspective(religion, questionId, modelId) {
+                    const modelData = this.modelData[modelId];
+                    if (!modelData) return null;
+                    
+                    const question = modelData.find(q => q.question_id === questionId);
+                    if (!question) return null;
+                    
+                    return question.religious_perspectives.find(p => p.religion === religion);
+                },
+                
+                // Get perspective for specific religion (for religion comparison)
+                getReligionPerspective(religion, questionId) {
+                    const modelData = this.modelData[this.selectedModel];
+                    if (!modelData) return null;
+                    
+                    const question = modelData.find(q => q.question_id === questionId);
+                    if (!question) return null;
+                    
+                    return question.religious_perspectives.find(p => p.religion === religion);
                 }
             }
         }

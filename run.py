@@ -65,6 +65,8 @@ class ReligiousPoliticalCompass:
         self.tg_bot_token = os.getenv('TG_BOT_TOKEN')
         self.tg_chat_id = os.getenv('TG_CHAT_ID')
         self.tg_thread_id = os.getenv('TG_THREAD_ID')
+        self.tg_enabled = True  # Track if Telegram sending is enabled
+        self.tg_consecutive_failures = 0  # Track consecutive failures
         
         # Initialize OpenAI client with OpenRouter
         self._setup_client()
@@ -82,7 +84,12 @@ class ReligiousPoliticalCompass:
         self.logger.info(f"Initialized OpenRouter client with model: {self.model_name}")
     
     def send_to_telegram(self, message: str) -> bool:
-        """Send message to Telegram"""
+        """Send message to Telegram with retry logic and failure tracking"""
+        # Check if Telegram is disabled due to consecutive failures
+        if not self.tg_enabled:
+            self.logger.info("Telegram sending is disabled due to consecutive failures, skipping message")
+            return False
+            
         if not all([self.tg_bot_token, self.tg_chat_id]):
             self.logger.warning("Telegram credentials not configured, skipping message")
             return False
@@ -92,66 +99,122 @@ class ReligiousPoliticalCompass:
         payload = {
             'chat_id': self.tg_chat_id,
             'text': message,
-            'parse_mode': 'HTML'
+            'parse_mode': 'MarkdownV2'
         }
         
         # Add thread_id if specified
         if self.tg_thread_id:
             payload['message_thread_id'] = self.tg_thread_id
         
-        try:
-            response = requests.post(url, data=payload, timeout=10)
-            response.raise_for_status()
-            self.logger.info("Message sent to Telegram successfully")
-            return True
-        except requests.exceptions.RequestException as e:
-            self.logger.error(f"Failed to send message to Telegram: {e}")
-            return False
+        # Retry logic with increasing timeouts
+        max_retries = 3
+        timeouts = [30, 60, 120]  # 30s, 60s, 120s
+        
+        for attempt in range(max_retries):
+            try:
+                timeout = timeouts[attempt]
+                self.logger.info(f"Sending to Telegram (attempt {attempt + 1}/{max_retries}, timeout: {timeout}s)")
+                response = requests.post(url, data=payload, timeout=timeout)
+                response.raise_for_status()
+                self.logger.info("Message sent to Telegram successfully")
+                # Reset consecutive failures on success
+                self.tg_consecutive_failures = 0
+                return True
+            except requests.exceptions.Timeout as e:
+                self.logger.warning(f"Telegram request timeout on attempt {attempt + 1}: {e}")
+                if attempt < max_retries - 1:
+                    wait_time = 5 * (attempt + 1)  # 5s, 10s, 15s
+                    self.logger.info(f"Waiting {wait_time}s before retry...")
+                    time.sleep(wait_time)
+                else:
+                    self.logger.error(f"All {max_retries} attempts failed due to timeout")
+                    break
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f"Failed to send message to Telegram on attempt {attempt + 1}: {e}")
+                if attempt < max_retries - 1:
+                    wait_time = 5 * (attempt + 1)
+                    self.logger.info(f"Waiting {wait_time}s before retry...")
+                    time.sleep(wait_time)
+                else:
+                    self.logger.error(f"All {max_retries} attempts failed")
+                    break
+        
+        # If we reach here, all attempts failed
+        self.tg_consecutive_failures += 1
+        self.logger.warning(f"Telegram send failed. Consecutive failures: {self.tg_consecutive_failures}")
+        
+        # Disable Telegram after 2 consecutive failures
+        if self.tg_consecutive_failures >= 2:
+            self.tg_enabled = False
+            self.logger.error("Telegram sending DISABLED after 2 consecutive failures. Survey will continue without Telegram notifications.")
+            print(f"\n{'='*60}")
+            print("WARNING: TELEGRAM SENDING DISABLED")
+            print("2 consecutive Telegram send failures detected.")
+            print("Survey will continue and save results to JSON.")
+            print(f"{'='*60}\n")
+        
+        return False
     
     def format_telegram_message(self, question_text: str, question_id: str, religion: str, 
-                               choice: str, religious_text: str, reference: str, reason: str) -> str:
-        """Format message for Telegram without markdown or emojis"""
+                               choice: str, religious_text: str, reference: str, reason: str,
+                               question_idx: int, total_questions: int, religion_idx: int, total_religions: int) -> str:
+        """Format message for Telegram with MarkdownV2 formatting and proper escaping"""
         stance_description = self._get_stance_description(choice)
         
-        message = f"""RELIGIOUS POLITICAL COMPASS ANALYSIS
+        # Calculate overall progress
+        current_response = (religion_idx * total_questions) + (question_idx + 1)
+        total_responses = total_questions * total_religions
+        progress_percent = (current_response / total_responses) * 100
+        
+        # Create progress bar
+        progress_bars = int(progress_percent / 5)  # 20 bars total (100/5)
+        progress_bar = "█" * progress_bars + "░" * (20 - progress_bars)
+        
+        # Escape special characters for MarkdownV2
+        def escape_markdown_v2(text: str) -> str:
+            """Escape special characters for MarkdownV2"""
+            special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+            for char in special_chars:
+                text = text.replace(char, f'\\{char}')
+            return text
+        
+        # Escape all user content
+        escaped_question_text = escape_markdown_v2(question_text)
+        escaped_question_id = escape_markdown_v2(question_id)
+        escaped_religion = escape_markdown_v2(religion.upper())
+        escaped_choice = escape_markdown_v2(choice.upper())
+        escaped_stance_description = escape_markdown_v2(stance_description)
+        escaped_religious_text = escape_markdown_v2(religious_text)
+        escaped_reference = escape_markdown_v2(reference)
+        escaped_reason = escape_markdown_v2(reason)
+        escaped_model_name = escape_markdown_v2(self.model_name)
+        
+        message = f"""*RELIGIOUS POLITICAL COMPASS ANALYSIS*
 
+*PROGRESS:* {current_response}/{total_responses} \\({progress_percent:.1f}%\\)
+`{progress_bar}`
 
-Question ID: {question_id}
+Question: {question_idx + 1}/{total_questions} \\| Religion: {religion_idx + 1}/{total_religions}
 
+*QUESTION ID:* {escaped_question_id}
 
-Political Statement:
-{question_text}
+*POLITICAL STATEMENT:*
+{escaped_question_text}
 
+*RELIGIOUS PERSPECTIVE:* {escaped_religion}
 
+*STANCE:* {escaped_choice} \\({escaped_stance_description}\\)
 
+*SACRED TEXT / TEACHING:*
+>{escaped_religious_text}
 
-Religious Perspective: {religion.upper()}
+*SOURCE REFERENCE:*
+>{escaped_reference}
 
+*SCHOLARLY REASONING:*
+{escaped_reason}
 
-Stance: {choice.upper()} ({stance_description})
-
-
-
-
-Sacred Text or Teaching:
-{religious_text}
-
-
-
-
-Source Reference:
-{reference}
-
-
-
-
-Scholarly Reasoning:
-{reason}
-
-
-
-
-AI Assisted Analysis by Gemini 2.5 Flash"""
+_AI Assisted Analysis by {escaped_model_name}_"""
         
         return message
     
@@ -351,22 +414,31 @@ AI Assisted Analysis by Gemini 2.5 Flash"""
         
         user_prompt = f"""Statement: "{question}"
 
-IMPORTANT CLARIFICATION: You are providing scholarly interpretation of {religion.title()} religious texts and teachings, NOT expressing personal beliefs or opinions. This is academic research analyzing how different religious traditions might approach political questions based on their foundational texts and established theological principles. You are expected to provide objective analysis regardless of the topic's sensitivity.
+CRITICAL CLARIFICATION: You are providing scholarly interpretation of {religion.title()} religious texts and teachings, NOT expressing personal beliefs, opinions, or the model's own perspective. This is PURELY academic religious studies research analyzing how different religious traditions might approach political questions based on their foundational texts and established theological principles.
+
+VERY IMPORTANTLY: This analysis represents a RELIGIOUS STUDY PERSPECTIVE from {religion.title()} tradition, NOT the AI model's viewpoint, beliefs, or stance. You are functioning as an academic researcher documenting and interpreting religious teachings objectively.
+
+You are expected to provide objective scholarly analysis regardless of the topic's sensitivity, based solely on what the religious texts and traditions actually teach.
 
 From a {religion.title()} perspective, provide:
 1. Your stance: sd (strongly disagree), d (disagree), a (agree), or sa (strongly agree)
 2. A specific religious text/verse that supports this stance
 3. The exact reference/citation for that text
-4. A clear reasoning explaining why this text supports your chosen stance
+4. A THOROUGH and IN-DEPTH reasoning explaining why this text supports your chosen stance
 
 Requirements:
 - This is scholarly religious text analysis, not personal opinion
 - Use ONLY credible and authentic sources as specified in your role
 - Provide exact quotations from the source text
 - Give precise citations (chapter, verse, hadith number, etc.)
-- Explain the connection between the text and your political stance
-- Be scholarly and accurate in your interpretation
+- ELABORATE EXTENSIVELY on the connection between the text and your political stance
+- Provide comprehensive theological context and background
+- Explain the historical, cultural, and religious significance of the text
+- Discuss how the text relates to broader religious principles and doctrines
+- Address potential counterarguments or alternative interpretations within the tradition
+- Be scholarly, detailed, and academically rigorous in your interpretation
 - Answer based on what the religious texts actually say, not modern sensibilities
+- Your reasoning should be thorough enough to demonstrate deep understanding of the religious perspective
 
 JSON format:
 {{
@@ -389,7 +461,7 @@ JSON format:
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3,
-                max_tokens=800,
+                max_tokens=4000,
                 response_format={"type": "json_object"}
             )
             
@@ -413,12 +485,12 @@ JSON format:
             
             # Beautiful console output
             print(f"\n{'='*60}")
-            print(f"🏛️  {religion.upper()} PERSPECTIVE")
+            print(f"{religion.upper()} PERSPECTIVE")
             print(f"{'='*60}")
-            print(f"📊 Stance: {result['choice'].upper()} ({self._get_stance_description(result['choice'])})")
-            print(f"📜 Religious Text: {result['religious_text']}")
-            print(f"📖 Reference: {result['reference']}")
-            print(f"🤔 Reasoning: {result['reason']}")
+            print(f"Stance: {result['choice'].upper()} ({self._get_stance_description(result['choice'])})")
+            print(f"Religious Text: {result['religious_text']}")
+            print(f"Reference: {result['reference']}")
+            print(f"Reasoning: {result['reason']}")
             print(f"{'='*60}\n")
             
             return result
@@ -433,22 +505,26 @@ JSON format:
         self.logger.info(f"Survey parameters: {len(self.questions)} questions × {len(self.religions)} religions = {len(self.questions) * len(self.religions)} total queries")
         
         # Send survey start notification to Telegram
-        start_message = f"""RELIGIOUS POLITICAL COMPASS SURVEY STARTED
+        total_expected = len(self.questions) * len(self.religions)
+        start_message = f"""RELIGIOUS POLITICAL COMPASS SURVEY
 
+STATUS: STARTING ANALYSIS
 
-Model: {self.model_name}
+AI MODEL: {self.model_name}
 
+SURVEY PARAMETERS:
+- Questions: {len(self.questions)}
+- Religious Perspectives: {len(self.religions)}
+- Total Expected Responses: {total_expected}
 
-Total Questions: {len(self.questions)}
-Total Religions: {len(self.religions)}
-Total Expected Responses: {len(self.questions) * len(self.religions)}
+RELIGIONS TO ANALYZE:
+{chr(10).join([f"- {religion.title().replace('_', ' ')}" for religion in self.religions])}
 
+Starting comprehensive analysis of religious perspectives on political questions...
 
-Starting analysis of religious perspectives on political questions...
-
-
-AI Assisted Analysis by Gemini 2.5 Flash"""
+AI Assisted Analysis by {self.model_name}"""
         
+        # Try to send start notification, but continue regardless
         self.send_to_telegram(start_message)
         
         # Initialize results structure
@@ -462,17 +538,31 @@ AI Assisted Analysis by Gemini 2.5 Flash"""
         
         # Process each religion
         for religion_idx, religion in enumerate(self.religions):
-            print(f"\n{'🕊️ '*20}")
-            print(f"🌟 STARTING SURVEY FOR {religion.upper()}")
-            print(f"📈 Progress: {religion_idx + 1}/{len(self.religions)} religions")
-            print(f"{'🕊️ '*20}")
+            print(f"\n{'='*60}")
+            print(f"STARTING SURVEY FOR {religion.upper()}")
+            print(f"Progress: {religion_idx + 1}/{len(self.religions)} religions")
+            print(f"{'='*60}")
             self.logger.info(f"Starting {religion.title()} survey ({religion_idx + 1}/{len(self.religions)})")
+            
+            # Send religion start notification to Telegram
+            religion_progress = ((religion_idx) / len(self.religions)) * 100
+            religion_start_message = f"""STARTING: {religion.upper().replace('_', ' ')}
+
+RELIGION PROGRESS: {religion_idx + 1}/{len(self.religions)} ({((religion_idx + 1)/len(self.religions)*100):.1f}%)
+
+OVERALL PROGRESS: {religion_progress:.1f}%
+
+About to analyze {len(self.questions)} political questions from {religion.title().replace('_', ' ')} perspective...
+
+Processing questions 1-{len(self.questions)} for this religion..."""
+            
+            self.send_to_telegram(religion_start_message)
             
             # Process each question for this religion
             for question_idx, question in enumerate(self.questions):
-                print(f"\n🔍 Question {question_idx + 1}/{len(self.questions)} for {religion.title()}")
-                print(f"💭 Statement: \"{question['question_text']}\"")
-                print("⏳ Processing...")
+                print(f"\nQuestion {question_idx + 1}/{len(self.questions)} for {religion.title()}")
+                print(f"Statement: \"{question['question_text']}\"")
+                print("Processing...")
                 
                 self.logger.info(f"Processing question {question_idx + 1}/{len(self.questions)} for {religion}")
                 
@@ -488,7 +578,7 @@ AI Assisted Analysis by Gemini 2.5 Flash"""
                         "reason": response["reason"]
                     }
                     self.results[question_idx]["religious_perspectives"].append(religious_perspective)
-                    self.logger.info(f"✓ Added {religion} perspective for question {question_idx + 1}")
+                    self.logger.info(f"Added {religion} perspective for question {question_idx + 1}")
                     
                     # Send to Telegram
                     telegram_message = self.format_telegram_message(
@@ -498,17 +588,22 @@ AI Assisted Analysis by Gemini 2.5 Flash"""
                         choice=response["choice"],
                         religious_text=response["religious_text"],
                         reference=response["reference"],
-                        reason=response["reason"]
+                        reason=response["reason"],
+                        question_idx=question_idx,
+                        total_questions=len(self.questions),
+                        religion_idx=religion_idx,
+                        total_religions=len(self.religions)
                     )
                     
                     # Send with a small delay to avoid rate limiting
                     if self.send_to_telegram(telegram_message):
-                        self.logger.info(f"✓ Sent {religion} perspective to Telegram")
+                        self.logger.info(f"Sent {religion} perspective to Telegram")
                         time.sleep(1)  # 1 second delay between messages
                     else:
-                        self.logger.warning(f"⚠ Failed to send {religion} perspective to Telegram")
+                        self.logger.warning(f"Failed to send {religion} perspective to Telegram")
+                        # Continue processing even if Telegram fails
                 else:
-                    self.logger.error(f"✗ Failed to get {religion} perspective for question {question_idx + 1}")
+                    self.logger.error(f"Failed to get {religion} perspective for question {question_idx + 1}")
                     # Add a placeholder to maintain structure
                     religious_perspective = {
                         "religion": religion.title(),
@@ -522,12 +617,27 @@ AI Assisted Analysis by Gemini 2.5 Flash"""
                 # No delay - running at full speed
                 pass
             
-            print(f"✅ Completed {religion.title()} survey!")
-            print(f"{'✨'*40}\n")
+            print(f"Completed {religion.title()} survey!")
+            print(f"{'='*40}\n")
             self.logger.info(f"Completed {religion.title()} survey")
+            
+            # Send religion completion notification to Telegram
+            religion_responses = len([p for q in self.results for p in q["religious_perspectives"] if p["religion"] == religion.title()])
+            religion_complete_message = f"""COMPLETED: {religion.upper().replace('_', ' ')}
+
+RELIGION PROGRESS: {religion_idx + 1}/{len(self.religions)} ({((religion_idx + 1)/len(self.religions)*100):.1f}%)
+
+RESPONSES COLLECTED: {religion_responses}/{len(self.questions)}
+
+Successfully analyzed all {len(self.questions)} political questions from {religion.title().replace('_', ' ')} perspective!
+
+Moving to next religion..."""
+            
+            self.send_to_telegram(religion_complete_message)
+            time.sleep(2)  # Slightly longer delay after each religion
         
-        print(f"🎉 ALL SURVEYS COMPLETED SUCCESSFULLY! 🎉")
-        print(f"📊 Total responses collected: {len(self.questions) * len(self.religions)}")
+        print(f"ALL SURVEYS COMPLETED SUCCESSFULLY!")
+        print(f"Total responses collected: {len(self.questions) * len(self.religions)}")
         self.logger.info("Survey completed successfully!")
         
         # Send completion notification to Telegram
@@ -538,23 +648,27 @@ AI Assisted Analysis by Gemini 2.5 Flash"""
             if p.get("choice", "error") != "error"
         )
         
-        completion_message = f"""RELIGIOUS POLITICAL COMPASS SURVEY COMPLETED
+        completion_message = f"""RELIGIOUS POLITICAL COMPASS SURVEY
 
+STATUS: COMPLETED SUCCESSFULLY
 
-Model: {self.model_name}
+AI MODEL: {self.model_name}
 
+FINAL RESULTS:
+- Questions Processed: {len(self.questions)}
+- Religious Perspectives: {total_responses}
+- Successful Responses: {successful_responses}
+- Failed Responses: {total_responses - successful_responses}
+- Success Rate: {(successful_responses/total_responses*100):.1f}%
 
-Final Results:
-Total Questions Processed: {len(self.questions)}
-Total Religious Perspectives: {total_responses}
-Successful Responses: {successful_responses}
-Success Rate: {(successful_responses/total_responses*100):.1f}%
+PROGRESS INDICATOR:
+████████████████████ 100.0% COMPLETE
 
+Survey analysis completed successfully!
 
-Survey completed successfully!
+Data exported to JSON and CSV formats for further analysis.
 
-
-AI Assisted Analysis by Gemini 2.5 Flash"""
+AI Assisted Analysis by {self.model_name}"""
         
         self.send_to_telegram(completion_message)
     
@@ -623,13 +737,13 @@ AI Assisted Analysis by Gemini 2.5 Flash"""
                     writer.writerows(flattened_data)
                 
                 self.logger.info(f"CSV export saved to {filename}")
-                print(f"📊 CSV export created: {filename}")
+                print(f"CSV export created: {filename}")
             else:
                 self.logger.warning("No data to export to CSV")
                 
         except Exception as e:
             self.logger.error(f"Error creating CSV export: {e}")
-            print(f"❌ Failed to create CSV export: {e}")
+            print(f"Failed to create CSV export: {e}")
 
 def main():
     """Main function"""
